@@ -4,9 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 
-	Api "github.com/jordicido/pokedexcli/internal"
+	Api "github.com/jordicido/pokedexcli/internal/api"
 )
 
 type cliCommand struct {
@@ -15,26 +14,9 @@ type cliCommand struct {
 	callback    func() error
 }
 
-func refreshConfig(advance bool) {
-	if advance {
-		if config.Next > 0 {
-			config.Previous += 20
-		}
-		config.Next += 20
-	} else {
-		if config.Next == 0 {
-			fmt.Println("This command is not valid")
-			return
-		} else if config.Previous > 0 {
-			config.Previous -= 20
-		}
-		config.Next -= 20
-	}
-}
-
 var config struct {
-	Next     int
-	Previous int
+	Next     *string
+	Previous *string
 }
 
 var commands map[string]cliCommand
@@ -53,23 +35,27 @@ func commandExit() error {
 }
 
 func commandMap() error {
-	nextOffset := strconv.Itoa(config.Next)
-	locations := Api.CallPokeLocationArea(nextOffset)
+	var locations []string
+	locations, config.Next, config.Previous = Api.CallPokeLocationArea(config.Next)
 	for _, location := range locations {
 		fmt.Println(location)
 	}
-	refreshConfig(true)
 
 	return nil
 }
 
 func commandMapB() error {
-	previousOffset := strconv.Itoa(config.Previous)
-	locations := Api.CallPokeLocationArea(previousOffset)
+	var locations []string
+	locations, config.Next, config.Previous = Api.CallPokeLocationArea(config.Previous)
 	for _, location := range locations {
 		fmt.Println(location)
 	}
-	refreshConfig(false)
+
+	return nil
+}
+
+func commandExplore() error {
+	//TODO
 
 	return nil
 }
@@ -95,6 +81,11 @@ func initCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Displays the previous 20 location areas in the Pokemon world",
 			callback:    commandMapB,
+		},
+		"explore": {
+			name:        "explore",
+			description: "List of all the Pokémon in a given area",
+			callback:    commandExplore,
 		},
 	}
 }
