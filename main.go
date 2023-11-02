@@ -67,6 +67,52 @@ func commandExplore(area interface{}) error {
 	return nil
 }
 
+func commandCatch(pokemonName interface{}) error {
+	fmt.Printf("Throwing a pokeball at %s...\n", pokemonName)
+	catch := Api.CatchPokemon(pokemonName.(string))
+
+	if catch {
+		fmt.Printf("%s was caught!\n", pokemonName)
+	} else {
+		fmt.Printf("%s escaped!\n", pokemonName)
+	}
+
+	return nil
+}
+
+func commandInspect(pokemonName interface{}) error {
+	fmt.Printf("Throwing a pokeball at %s...\n", pokemonName)
+	pokemonInfo, caught := Api.InspectPokemon(pokemonName.(string))
+
+	if caught {
+		fmt.Printf("Name: %s\n", pokemonInfo.Name)
+		fmt.Printf("Height: %d\n", pokemonInfo.Height)
+		fmt.Printf("Weight: %d\n", pokemonInfo.Weight)
+		fmt.Println("Stats:")
+		for _, stat := range pokemonInfo.Stats {
+			fmt.Printf("-%s: %d\n", stat.Name, stat.BaseStat)
+		}
+		fmt.Println("Types:")
+		for _, pokeType := range pokemonInfo.Types {
+			fmt.Printf("-%s\n", pokeType.Name)
+		}
+	} else {
+		fmt.Println("You have not caught that pokemon")
+	}
+
+	return nil
+}
+
+func commandPokedex(interface{}) error {
+	pokemons := Api.GetPokedex()
+	fmt.Println("Your pokedex:")
+	for _, pokemon := range pokemons {
+		fmt.Printf("- %s\n", pokemon)
+	}
+
+	return nil
+}
+
 func initCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
@@ -93,6 +139,21 @@ func initCommands() map[string]cliCommand {
 			name:        "explore",
 			description: "List of all the Pokémon in a given area",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Catching Pokemon adds them to the user's Pokedex",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Allow players to see details about a Pokemon if they have seen it before (or in our case, caught it)",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Print a list of all the names of the Pokemon the user has caught",
+			callback:    commandPokedex,
 		},
 	}
 }
